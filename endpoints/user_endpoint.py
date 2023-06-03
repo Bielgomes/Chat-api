@@ -2,9 +2,8 @@ from flask import request, abort, jsonify
 from flask_restx import Resource, Namespace, fields
 from endpoints.user_vo import UserVO
 from services.user_service import UserService
-import communs
 
-ns = Namespace("user", " description='The IMDb ns is an interface that enables developers to access and utilize the extensive movie and TV show database provided by IMDb (Internet Movie Database). With the IMDb ns, developers can retrieve detailed information about films, television series, actors, and other related content. This includes data such as titles, release dates, genres, ratings, cast and crew details, plot summaries, images, and more. By integrating the IMDb ns into their applications, developers can enhance their services with comprehensive movie and TV show information, enabling features like search functionality, personalized recommendations, and rich media experiences. The IMDb ns empowers developers to create engaging entertainment-related applications that leverage the wealth of data available in the IMDb database, providing users with valuable insights and an enhanced viewing experience.")
+ns = Namespace("users", description="Chat API")
 
 user_model = ns.model('user', {
   "id": fields.Integer(required=True, description="User Id"),
@@ -14,20 +13,85 @@ user_model = ns.model('user', {
 })
 
 @ns.route("")
-class UserEndpoint(Resource):
-  _user_service = UserService()
+class UsersEndpoint(Resource):
+  __user_service = UserService()
+
+  def post(self):
+    body = request.get_json()
+
+    try:
+      user = UserVO()
+      user.fromJson(body)
+      self.__user_service.add_user(user)
+    except ValueError as e:
+      abort(400, e)
+    except Exception as e:
+      abort(409, e)
+
+    return jsonify(success="User created successfully!")
+
+@ns.route("/me")
+class UserTokenEndpoint(Resource):
+  __user_service = UserService()
+
+  def get(self):
+    body = request.get_json()
+
+    # Remover esta linha e arrumar os puts
+    print(request.headers.get('Authorization'))
+
+    try:
+      user = UserVO()
+      user.from_json_password_email(body)
+      token = self.__user_service.get_token(user)
+    except ValueError as e:
+      abort(400, e)
+    except IndexError as e:
+      abort(404, e)
+    except Exception as e:
+      abort(401, e)
+
+    return jsonify(token=token)
 
 @ns.route("/<int:id>")
-class UserEndpointGet(Resource):
-  _user_service = UserService()
+class UserEndpoint(Resource):
+  __user_service = UserService()
 
   def get(self, id):
     if id < 1:
       abort(403, "Invalid ID")
 
     try:
-      user = self._user_service.find_user(id)
+      user = self.__user_service.find_user(id)
     except IndexError as e:
-      abort(404, str(e))
+      abort(404, e)
 
     return user.to_json()
+
+  def put(self, id):
+    if id < 1:
+      abort(403, "Invalid ID")
+      
+    body = request.get_json()
+
+    try:
+      user = UserVO()
+      user.fromJson(body)
+      self.__user_service.update(id, user)
+    except ValueError as e:
+      abort(400, e)
+    except IndexError as e:
+      abort(404, e)
+
+    return jsonify(success="User changed successfully")
+
+  def delete(self, id):
+    if id < 1:
+      abort(403, "Invalid ID")
+
+    try:
+      self.__user_service.delete_user(id)
+    except IndexError as e:
+      abort(404, e)
+
+    return jsonify(success="User deleted successfully")

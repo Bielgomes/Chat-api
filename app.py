@@ -14,6 +14,14 @@ api = Api(
 
 api.add_namespace(user_ns)
 
+@app.errorhandler(400)
+def _bad_request(e):
+  return jsonify(error=str(e)), 400
+
+@app.errorhandler(401)
+def _unauthorized(e):
+  return jsonify(error=str(e)), 401
+
 @app.errorhandler(403)
 def _forbidden(e):
   return jsonify(error=str(e)), 403
@@ -21,6 +29,10 @@ def _forbidden(e):
 @app.errorhandler(404)
 def _not_found(e):
   return jsonify(error=str(e)), 404
+
+@app.errorhandler(409)
+def _conflict(e):
+  return jsonify(error=str(e)), 409
 
 if __name__ == "__main__":
   app.run(debug=True)

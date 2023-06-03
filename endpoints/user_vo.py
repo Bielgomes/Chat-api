@@ -9,37 +9,48 @@ class UserVO():
     self.email = "",
     self.password = "",
     self.token = ""
+    self.name = ""
+    self.description = ""
 
   def _is_email_valid(self, json, att_name):
     if att_name not in json or json[att_name] is None or not json[att_name].strip() or not self.__regex.fullmatch(json[att_name]):
       raise ValueError(f"The attribute {att_name} is invalid!")
     return json[att_name]
 
-  def _is_string_valid(self, json, att_name):
-    if att_name not in json or json[att_name] is None or not json[att_name].strip():
+  def _is_string_valid(self, json, att_name, max_length):
+    if att_name not in json or json[att_name] is None or not json[att_name].strip() or len(json[att_name]) > max_length:
       raise ValueError(f"The attribute {att_name} is invalid!")
     return json[att_name]
 
   def fromJson(self, json):
     self.email = self._is_email_valid(json, "email"),
-    self.password = self._is_string_valid(json, "password")
+    self.password = self._is_string_valid(json, "password", 30)
+    self.name = self._is_string_valid(json, "name", 25)
+    self.description = self._is_string_valid(json, "description", 140)
+
+  def from_json_password_email(self,json):
+    self.passowrd = self._is_string_valid(json, "password", 30)
+    self.email = self._is_email_valid(json, "email")
 
   @staticmethod
-  def fromDto(self, dto : UserDTO):
+  def from_dto(self, dto : UserDTO):
     vo = UserVO()
     vo.id = dto.id
     vo.email = dto.email
     vo.password = dto.password
     vo.token = dto.token
+    vo.name = dto.name
+    vo.description = dto.description
     
     return vo
 
   def to_dto(self):
     dto = UserDTO()
-    dto.id = self.id
     dto.email = self.email
     dto.password = self.password
     dto.token = self.token
+    dto.name = self.name
+    dto.description = self.description
 
     return dto
 

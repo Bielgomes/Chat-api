@@ -1,8 +1,9 @@
+import bcrypt
+from uuid import uuid4
+
 from repository.user_repository import UserRepository
 from repository.user_dto import UserDTO
 from endpoints.user_vo import UserVO
-
-from uuid import uuid4
 
 class UserService():
   __user_repository = UserRepository()
@@ -12,8 +13,8 @@ class UserService():
     if not current_user:
       raise IndexError("User not exists")
 
-    if not current_user.email == user.email and not current_user.password == user.password:
-      raise Exception("Invalid Credentials")
+    if not current_user.email == user.email or not bcrypt.checkpw(user.password.encode("utf-8"), current_user.password.encode("utf-8")):
+        raise Exception("Invalid Credentials")
 
     return self.__user_repository.get_token(current_user.id)[0]
 
@@ -29,16 +30,36 @@ class UserService():
       raise Exception("This email is already registered")
     
     userDTO = user.to_dto()
+
+    userDTO.password = bcrypt.hashpw(userDTO.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
     userDTO.token = str(uuid4())
 
     self.__user_repository.add(userDTO)
 
-  def delete_user(self, id):
-    user = self.__user_repository.find(id)
-    if user is None:
+  def delete_user(self, user : UserVO):
+    current_user = self.__user_repository.find_by_email(user.email)
+    if current_user is None:
       raise IndexError("User not found!")
     
-    self.__user_repository.delete(user)
+    if not current_user.email == user.email or not bcrypt.checkpw(user.password.encode("utf-8"), current_user.password.encode("utf-8")):
+        raise Exception("Invalid Credentials")
+    
+    self.__user_repository.delete(current_user)
 
-  def update(self, id, user:UserVO):
-    self.__user_repository.update(id, user.to_dto())
+  def update_info(self, token, user : UserVO):
+    self.__user_repository.update_info(token, user.to_dto())
+
+  def update_email(self, token, user : UserVO):
+    current_user = self.__user_repository.find_by_email(user.email)
+    if current_user:
+      raise Exception("This email is already registered")
+
+    self.__user_repository.update_email(token, user.to_dto())
+
+  def update_password(self, token, user : UserVO):
+    userDTO = user.to_dto()
+
+    userDTO.password = bcrypt.hashpw(userDTO.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    userDTO.token = str(uuid4())
+
+    self.__user_repository.update_password(token, userDTO)

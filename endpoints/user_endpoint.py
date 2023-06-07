@@ -9,6 +9,8 @@ user_model = ns.model('user', {
   "id": fields.Integer(required=True, description="User Id"),
   "email": fields.String(required=True, description="User Email"),
   "password": fields.String(required=True, description="User passwd"),
+  "name": fields.String(required=True, description="User Name", validate=lambda val: len(val) <= 25),
+  "description": fields.String(required=True, description="User Description", validate=lambda val: len(val) <= 140),
   "token": fields.String(required=True, description="Validation Token")
 })
 
@@ -136,8 +138,3 @@ class UserPasswordEndpoint(Resource):
       abort(404, e)
 
     return jsonify(success="Password changed successfully")
-
-    
-
-    
-

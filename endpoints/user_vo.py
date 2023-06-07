@@ -26,6 +26,18 @@ class UserVO():
     if att_name not in json or json[att_name] is None or len(json[att_name]) > max_length:
       raise ValueError(f"The attribute {att_name} is invalid!")
     return json[att_name]
+  
+  @staticmethod
+  def from_dto(dto : UserDTO):
+    vo = UserVO()
+    vo.id = dto.id
+    vo.email = dto.email
+    vo.password = dto.password
+    vo.token = dto.token
+    vo.name = dto.name
+    vo.description = dto.description
+    
+    return vo
 
   def from_json(self, json):
     self.email = self._is_email_valid(json, "email"),
@@ -47,18 +59,6 @@ class UserVO():
   def from_json_email(self, json):
     self.email = self._is_email_valid(json, "email")
 
-  @staticmethod
-  def from_dto(self, dto : UserDTO):
-    vo = UserVO()
-    vo.id = dto.id
-    vo.email = dto.email
-    vo.password = dto.password
-    vo.token = dto.token
-    vo.name = dto.name
-    vo.description = dto.description
-    
-    return vo
-
   def to_dto(self):
     dto = UserDTO()
     dto.email = self.email
@@ -70,4 +70,10 @@ class UserVO():
     return dto
 
   def to_json(self):
-    return self.__dict__.copy()
+    json = {}
+    
+    json["id"] = self.id
+    json["name"] = self.name
+    json["description"] = self.description
+
+    return json

@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from flask_restx import Api
 
 from endpoints.user_endpoint import ns as user_ns
+from endpoints.chat_endpoint import ns as chat_ns
 
 app = Flask(__name__)
 api = Api(
@@ -13,6 +14,7 @@ api = Api(
 )
 
 api.add_namespace(user_ns)
+api.add_namespace(chat_ns)
 
 @app.errorhandler(400)
 def _bad_request(e):

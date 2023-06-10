@@ -19,7 +19,7 @@ class ChatVO:
     return json[att_name]
   
   def _is_max_users_valid(self, json, att_name):
-    if att_name not in json or json[att_name] is None or json[att_name] < 2 or json[att_name] > 50:
+    if att_name not in json or json[att_name] is None or type(json[att_name]) is not int or json[att_name] < 2 or json[att_name] > 50:
       raise ValueError(f"The attribute {att_name} is invalid!")
     return json[att_name]
 

@@ -18,8 +18,7 @@ class DBConfig:
     self.engine = self.create_connection()
 
   def create_connection(self):
-    db_string = "postgresql://postgres:admin@localhost:5432/chatapi"
-    # db_string = "postgresql://postgres:root@localhost:5432/postgres"
+    db_string = "postgresql://postgres:root@localhost:5432/postgres"
     conn = create_engine(db_string)
 
     Base.metadata.create_all(conn)

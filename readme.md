@@ -14,6 +14,10 @@
 
 `GET /users`
 
+### Get Chats
+
+`GET /users/chats`
+
 ### Update User
 
 `PATCH /users`
@@ -40,9 +44,13 @@
 
 `DELETE /chats/<int:chat_id>`
 
-### Add User
+### Add User to Chat
 
 `POST /chats/<int:chat_id>/join`
+
+### Remove User from Chat
+
+`REMOVE /chats/<int:chat_id>/leave`
 
 
 

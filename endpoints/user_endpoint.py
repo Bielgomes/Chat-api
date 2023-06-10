@@ -1,6 +1,9 @@
+import communs
 from flask import request, abort, jsonify
 from flask_restx import Resource, Namespace, fields
+
 from endpoints.user_vo import UserVO
+
 from services.user_service import UserService
 
 ns = Namespace("users", description="Chat API")
@@ -74,11 +77,28 @@ class UsersEndpoint(Resource):
 
     return jsonify(success="User deleted successfully")
 
+@ns.route("/chats")
+class UserChatsEndpoint(Resource):
+  __user_service = UserService()
+
+  def get(self):
+    token = request.headers.get('Authorization')
+    if token is None or not len(token) == 36:
+      abort(403, "Invalid Token")
+
+    try:
+      chats = self.__user_service.find_chats(token)
+      chats = communs._to_json(chats)
+    except IndexError as e:
+      abort(404, e)
+
+    return chats
+
 @ns.route("/token")
 class UserTokenEndpoint(Resource):
   __user_service = UserService()
 
-  def get(self):
+  def post(self):
     body = request.get_json()
 
     try:

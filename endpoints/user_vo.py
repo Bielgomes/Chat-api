@@ -12,8 +12,8 @@ class UserVO():
     self.name = ""
     self.description = ""
 
-  def _is_email_valid(self, json, att_name):
-    if att_name not in json or json[att_name] is None or not json[att_name].strip() or not self.__regex.fullmatch(json[att_name]):
+  def _is_email_valid(self, json, att_name, max_length):
+    if att_name not in json or json[att_name] is None or not json[att_name].strip() or not self.__regex.fullmatch(json[att_name]) or len(json[att_name]) > max_length:
       raise ValueError(f"The attribute {att_name} is invalid!")
     return json[att_name]
 
@@ -40,13 +40,13 @@ class UserVO():
     return vo
 
   def from_json(self, json):
-    self.email = self._is_email_valid(json, "email"),
+    self.email = self._is_email_valid(json, "email", 320),
     self.password = self._is_string_valid(json, "password", 30)
     self.name = self._is_string_valid(json, "name", 25)
     self.description = self._is_description_valid(json, "description", 140)
 
   def from_json_login(self,json):
-    self.email = self._is_email_valid(json, "email")
+    self.email = self._is_email_valid(json, "email", 320)
     self.password = self._is_string_valid(json, "password", 30)
 
   def from_json_info(self, json):
@@ -57,7 +57,7 @@ class UserVO():
     self.password = self._is_string_valid(json, "password", 30)
 
   def from_json_email(self, json):
-    self.email = self._is_email_valid(json, "email")
+    self.email = self._is_email_valid(json, "email", 320)
 
   def to_dto(self):
     dto = UserDTO()

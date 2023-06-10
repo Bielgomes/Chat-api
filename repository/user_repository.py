@@ -14,8 +14,8 @@ class UserRepository(AbstractRepository):
   def get_token(self, id):
     return self._session.query(self._class.token).filter(self._class.id == id).first()
 
-  def update_info(self, token, user : UserDTO):
-    current_user = self.find_by_token(token)
+  def update_info(self, id, user : UserDTO):
+    current_user = self.find_by_token(id)
 
     if current_user is None:
       raise IndexError("User not found!")
@@ -25,8 +25,8 @@ class UserRepository(AbstractRepository):
 
     self._session.commit()
 
-  def update_email(self, token, user : UserDTO):
-    current_user = self.find_by_token(token)
+  def update_email(self, id, user : UserDTO):
+    current_user = self.find(id)
 
     if current_user is None:
       raise IndexError("User not found!")
@@ -35,8 +35,8 @@ class UserRepository(AbstractRepository):
 
     self._session.commit()
 
-  def update_password(self, token, user : UserDTO):
-    current_user = self.find_by_token(token)
+  def update_password(self, id, user : UserDTO):
+    current_user = self.find_by_token(id)
 
     if current_user is None:
       raise IndexError("User not found!")

@@ -1,6 +1,8 @@
 from flask import request, jsonify, abort
 from flask_restx import Resource, Namespace, fields
+
 from endpoints.chat_vo import ChatVO
+
 from services.chat_service import ChatService
 
 ns = Namespace("chats", description='Chat API')
@@ -27,9 +29,11 @@ class ChatsEndpoint(Resource):
     try:
       chat = ChatVO()
       chat.from_json(body)
-      self.__chat_service.create_chat(chat, token)
+      self.__chat_service.add_chat(chat, token)
     except ValueError as e:
       abort(400, e)
+    except IndexError as e:
+      abort(404, e)
     except Exception as e:
       abort(409, e)
       
@@ -47,7 +51,7 @@ class ChatEndpoint(Resource):
     try:
       chat = self.__chat_service.find_chat(chat_id, token)
     except IndexError as e:
-      abort(404, str(e))
+      abort(404, e)
 
     return chat.to_json()
 
@@ -99,6 +103,24 @@ class ChatJoinEndpoint(Resource):
     except IndexError as e:
       abort(404, e)
     except Exception as e:
-      abort(403, e)
+      abort(409, e)
 
     return jsonify(success="Chat joined successfully!")
+  
+@ns.route("/<int:chat_id>/leave")
+class ChatJoinEndpoint(Resource):
+  __chat_service = ChatService()
+
+  def delete(self, chat_id):
+    token = request.headers.get('Authorization')
+    if token is None or not len(token) == 36:
+      abort(403, "Invalid Token")
+    
+    try:
+      self.__chat_service.leave_chat(chat_id, token)
+    except IndexError as e:
+      abort(404, e)
+    except Exception as e:
+      abort(403, e)
+
+    return jsonify(success="Chat leave successfully!")

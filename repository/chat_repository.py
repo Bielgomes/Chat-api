@@ -5,6 +5,12 @@ class ChatRepository(AbstractRepository):
   def __init__(self):
     super().__init__(ChatDTO)
 
+  def find_all_by_user(self, user_id):
+    return self._session.query(self._class).filter(self._class.id_user == user_id).all()
+  
+  def find_by_ids(self, chat_ids):
+    return self._session.query(self._class).filter(self._class.id.in_(chat_ids)).all()
+
   def add(self, chat : ChatDTO):
     self._session.add(chat)
     self._session.flush()

@@ -2,9 +2,9 @@ import communs
 from flask import request, abort, jsonify
 from flask_restx import Resource, Namespace, fields
 
-from endpoints.message_vo import MessageVO
+from endpoints.abstract_endpoints import AbstractEndpoints
 
-from services.message_service import MessageService
+from endpoints.message_vo import MessageVO
 
 ns = Namespace("chats", description="Chat API")
 
@@ -18,19 +18,17 @@ message_model = ns.add_model("message",
 })
 
 @ns.route("/<int:chat_id>/messages")
-class MessagesEndpoint(Resource):
-  __message_service = MessageService()
-
+class MessagesEndpoint(Resource, AbstractEndpoints):
   def get(self, chat_id):
     token = request.headers.get("Authorization")
     if token is None or not len(token) == 36:
       abort(403, "Invalid Token")
       
     try:
-      messages = self.__message_service.find_all_messages_from_chat(chat_id, token)
+      messages = self._message_service.find_all_messages_from_chat(chat_id, token)
       messages = communs._to_json(messages)
     except IndexError as e:
-      abort(404, e)
+      abort(404, str(e))
 
     return messages
 
@@ -44,30 +42,28 @@ class MessagesEndpoint(Resource):
     try:
       message = MessageVO()
       message.from_json(body)
-      self.__message_service.add_message(chat_id, message, token)
+      self._message_service.add_message(chat_id, message, token)
     except ValueError as e:
-      abort(400, e)
+      abort(400, str(e))
     except IndexError as e:
-      abort(404, e)
+      abort(404, str(e))
     except Exception as e:
-      abort(409, e)
+      abort(409, str(e))
 
     return jsonify(success="Message created successfully")
 
 @ns.route("/<int:chat_id>/messages/<int:message_id>")
-class MessageEndpoint(Resource):
-  __message_service = MessageService()
-
+class MessageEndpoint(Resource, AbstractEndpoints):
   def delete(self, chat_id, message_id):
     token = request.headers.get("Authorization")
     if token is None or not len(token) == 36:
       abort(403, "Invalid Token")
 
     try:
-      self.__message_service.remove_message(chat_id, message_id, token)
+      self._message_service.remove_message(chat_id, message_id, token)
     except IndexError as e:
-      abort(404, e)
+      abort(404, str(e))
     except Exception as e:
-      abort(403, e)
+      abort(403, str(e))
 
     return jsonify(success="Message deleted successfully")

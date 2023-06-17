@@ -1,9 +1,9 @@
 from flask import request, jsonify, abort
 from flask_restx import Resource, Namespace, fields
 
-from endpoints.chat_vo import ChatVO
+from endpoints.abstract_endpoints import AbstractEndpoints
 
-from services.chat_service import ChatService
+from endpoints.chat_vo import ChatVO
 
 ns = Namespace("chats", description='Chat API')
 
@@ -16,9 +16,7 @@ chat_model = ns.model('chat',
 })
 
 @ns.route("")
-class ChatsEndpoint(Resource):
-  __chat_service = ChatService()
-
+class ChatsEndpoint(Resource, AbstractEndpoints):
   def post(self):
     token = request.headers.get('Authorization')
     if token is None or not len(token) == 36:
@@ -29,29 +27,27 @@ class ChatsEndpoint(Resource):
     try:
       chat = ChatVO()
       chat.from_json(body)
-      self.__chat_service.add_chat(chat, token)
+      self._chat_service.add_chat(chat, token)
     except ValueError as e:
-      abort(400, e)
+      abort(400, str(e))
     except IndexError as e:
-      abort(404, e)
+      abort(404, str(e))
     except Exception as e:
-      abort(409, e)
+      abort(409, str(e))
       
     return jsonify(success="Chat created successfully!")
 
 @ns.route("/<int:chat_id>")
-class ChatEndpoint(Resource):
-  __chat_service = ChatService()
-
+class ChatEndpoint(Resource, AbstractEndpoints):
   def get(self, chat_id):
     token = request.headers.get('Authorization')
     if token is None or not len(token) == 36:
       abort(403, "Invalid Token")
 
     try:
-      chat = self.__chat_service.find_chat(chat_id, token)
+      chat = self._chat_service.find_chat(chat_id, token)
     except IndexError as e:
-      abort(404, e)
+      abort(404, str(e))
 
     return chat.to_json()
 
@@ -65,13 +61,13 @@ class ChatEndpoint(Resource):
     try:
       chat = ChatVO()
       chat.from_json(body)
-      self.__chat_service.update(chat_id, chat, token)
+      self._chat_service.update(chat_id, chat, token)
     except ValueError as e:
-      abort(400, e)
+      abort(400, str(e))
     except IndexError as e:
-      abort(404, e)
+      abort(404, str(e))
     except Exception as e:
-      abort(403, e)
+      abort(403, str(e))
 
     return jsonify(success="Chat updated successfully!")
 
@@ -81,46 +77,42 @@ class ChatEndpoint(Resource):
       abort(403, "Invalid Token")
     
     try:
-      self.__chat_service.remove_chat(chat_id, token)
+      self._chat_service.remove_chat(chat_id, token)
     except IndexError as e:
-      abort(404, e)
+      abort(404, str(e))
     except Exception as e:
-      abort(403, e)
+      abort(403, str(e))
 
     return jsonify(success="Chat removed successfully!")
 
 @ns.route("/<int:chat_id>/join")
-class ChatJoinEndpoint(Resource):
-  __chat_service = ChatService()
-
+class ChatJoinEndpoint(Resource, AbstractEndpoints):
   def post(self, chat_id):
     token = request.headers.get('Authorization')
     if token is None or not len(token) == 36:
       abort(403, "Invalid Token")
     
     try:
-      self.__chat_service.join_chat(chat_id, token)
+      self._chat_service.join_chat(chat_id, token)
     except IndexError as e:
-      abort(404, e)
+      abort(404, str(e))
     except Exception as e:
-      abort(409, e)
+      abort(409, str(e))
 
     return jsonify(success="Chat joined successfully!")
   
 @ns.route("/<int:chat_id>/leave")
-class ChatJoinEndpoint(Resource):
-  __chat_service = ChatService()
-
+class ChatJoinEndpoint(Resource, AbstractEndpoints):
   def delete(self, chat_id):
     token = request.headers.get('Authorization')
     if token is None or not len(token) == 36:
       abort(403, "Invalid Token")
     
     try:
-      self.__chat_service.leave_chat(chat_id, token)
+      self._chat_service.leave_chat(chat_id, token)
     except IndexError as e:
-      abort(404, e)
+      abort(404, str(e))
     except Exception as e:
-      abort(403, e)
+      abort(403, str(e))
 
     return jsonify(success="Chat leave successfully!")

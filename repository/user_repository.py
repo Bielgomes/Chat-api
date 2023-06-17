@@ -5,6 +5,16 @@ class UserRepository(AbstractRepository):
   def __init__(self):
     super().__init__(UserDTO)
 
+  def add(self, user: UserDTO):
+    self._session.add(user)
+    self._session.flush()
+
+    user.token = str(hash(f"{user.id}.{user.email}"))
+
+    self._session.commit()
+
+    return user.token, user.id
+
   def find_by_token(self, token):
     return self._session.query(self._class).filter(self._class.token == token).first()
   

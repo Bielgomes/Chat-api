@@ -1,5 +1,4 @@
 import bcrypt
-from uuid import uuid4
 
 from endpoints.user_vo import UserVO
 from endpoints.chat_vo import ChatVO
@@ -50,11 +49,9 @@ class UserService:
       raise Exception("This email is already registered")
     
     userDTO = user.to_dto()
-
     userDTO.password = bcrypt.hashpw(userDTO.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-    userDTO.token = str(uuid4())
 
-    self.__user_repository.add(userDTO)
+    return self.__user_repository.add(userDTO)
 
   def update_info(self, token, user : UserVO):
     current_user : UserDTO = self.__user_repository.find_by_token(token)
@@ -81,7 +78,7 @@ class UserService:
     userDTO = newUser.to_dto()
 
     userDTO.password = bcrypt.hashpw(userDTO.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-    userDTO.token = str(uuid4())
+    userDTO.token = str(hash(userDTO.id + '.' + userDTO.password))
 
     self.__user_repository.update_password(token, userDTO)
 
@@ -94,3 +91,5 @@ class UserService:
         raise Exception("Invalid Credentials")
     
     self.__user_repository.delete(current_user)
+
+    return user.id

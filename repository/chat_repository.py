@@ -8,6 +8,9 @@ class ChatRepository(AbstractRepository):
   def find_all_by_user(self, user_id):
     return self._session.query(self._class).filter(self._class.id_user == user_id).all()
   
+  def find_by_owner(self, owner_id):
+    return self._session.query(self._class).filter(self._class.id_owner == owner_id).all()
+  
   def find_by_ids(self, chat_ids):
     return self._session.query(self._class).filter(self._class.id.in_(chat_ids)).all()
 
@@ -29,4 +32,8 @@ class ChatRepository(AbstractRepository):
     current_chat.description = chat.description
     current_chat.max_users = chat.max_users
 
+    self._session.commit()
+
+  def delete_by_owner(self, owner_id):
+    self._session.query(self._class).filter(self._class.id_owner == owner_id).delete()
     self._session.commit()

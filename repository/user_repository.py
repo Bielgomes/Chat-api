@@ -37,11 +37,11 @@ class UserRepository(AbstractRepository):
 
   def update_email(self, id, user : UserDTO):
     current_user = self.find(id)
-
     if current_user is None:
       raise IndexError("User not found!")
 
     current_user.email = user.email
+    current_user.token = str(hash(current_user.id + '.' + current_user.email))
 
     self._session.commit()
 

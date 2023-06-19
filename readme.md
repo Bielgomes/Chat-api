@@ -10,9 +10,17 @@
 
 `POST /users/token`
 
+### Upload Avatar
+
+`POST /users/avatar`
+
+### Download Avatar
+
+`GET /users/<int:user_id>/avatar`
+
 ### Get User
 
-`GET /users`
+`GET /users/<int:user_id>`
 
 ### Get Chats
 
@@ -36,21 +44,29 @@
 
 `GET /chats/<int:chat_id>`
 
+### Get Users
+
+`GET /chats/<int:chat_id>/users`
+
 ### Update
 
 `PUT /chats/<int:chat_id>`
-
-### Delete
-
-`DELETE /chats/<int:chat_id>`
 
 ### Add User to Chat
 
 `POST /chats/<int:chat_id>/join`
 
+### Delete
+
+`DELETE /chats/<int:chat_id>`
+
 ### Remove User from Chat
 
 `REMOVE /chats/<int:chat_id>/leave`
+
+### Admin Remove User from Chat
+
+`REMOVE /chats/<int:chat_id>/admin/users/<int:user_id>`
 
 
 
@@ -62,7 +78,7 @@
 
 ### Get
 
-`GET /chats/<int:chat_id>/messages?filter`
+`GET /chats/<int:chat_id>/messages?userid=<int:userid>&text=<str:text>`
 
 ### Delete
 

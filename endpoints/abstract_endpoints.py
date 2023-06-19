@@ -19,5 +19,6 @@ class AbstractEndpoints():
     if self._token_cache[token] == id:
       del self._token_cache[token]
 
-  def get_id(self, token):
-    return self._token_cache[token]          
+  def get_id_from_cache(self, token):
+    return self._token_cache.get(token, None)
+

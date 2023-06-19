@@ -40,7 +40,7 @@ class UserVO():
     return vo
 
   def from_json(self, json):
-    self.email = self._is_email_valid(json, "email", 320),
+    self.email = self._is_email_valid(json, "email", 90),
     self.password = self._is_string_valid(json, "password", 30)
     self.name = self._is_string_valid(json, "name", 25)
     self.description = self._is_description_valid(json, "description", 140)

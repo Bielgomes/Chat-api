@@ -14,6 +14,14 @@ class UserChatRepository(AbstractRepository):
   def find_by_chat(self, id_chat):
     return self._session.query(self._class).filter(self._class.id_chat == id_chat).all()
   
+  def delete_by_user(self, id_user):
+    ids = self._session.query(self._class).filter(self._class.id_user == id_user).all()
+    self._session.query(self._class).filter(self._class.id_user == id_user).delete()
+    
+    self._session.commit()
+
+    return ids
+  
   def delete_by_chat(self, id_chat):
     self._session.query(self._class).filter(self._class.id_chat == id_chat).delete()
     self._session.commit()

@@ -19,10 +19,8 @@ class MessageService:
     self.__chat_repository = ChatRepository()
     self.__user_chat_repository = UserChatRepository()
 
-  def find_all_messages_from_chat(self, chat_id, token):
-    user : UserDTO = self.__user_repository.find_by_token(token)
-    if user is None:
-      raise IndexError("User not found")
+  def find_all_messages_from_chat(self, chat_id, user_id):
+    user : UserDTO = self.__user_repository.find(user_id)
     
     chat : ChatDTO = self.__chat_repository.find(chat_id)
     if chat is None:
@@ -35,10 +33,8 @@ class MessageService:
 
     return [MessageVO.from_dto(dto) for dto in dtos]
 
-  def add_message(self, chat_id, message : MessageVO, token):
-    user : UserDTO = self.__user_repository.find_by_token(token)
-    if user is None:
-      raise IndexError("User not found")
+  def add_message(self, chat_id, message : MessageVO, user_id):
+    user : UserDTO = self.__user_repository.find(user_id)
     
     chat : ChatDTO = self.__chat_repository.find(chat_id)
     if chat is None:
@@ -53,10 +49,8 @@ class MessageService:
 
     self.__message_repository.add(message.to_dto())
 
-  def remove_message(self, chat_id, message_id, token):
-    user : UserDTO = self.__user_repository.find_by_token(token)
-    if user is None:
-      raise IndexError("User not found")
+  def remove_message(self, chat_id, message_id, user_id):
+    user : UserDTO = self.__user_repository.find(user_id)
     
     chat : ChatDTO = self.__chat_repository.find(chat_id)
     if chat is None:
@@ -70,6 +64,6 @@ class MessageService:
       raise IndexError("Message not found") 
     
     if message.id_user != user.id:
-      raise Exception("This user does not own this message")
+      raise PermissionError("This user does not own this message")
     
     self.__message_repository.delete(message)

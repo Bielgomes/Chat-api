@@ -291,6 +291,8 @@ def test_admin_expulse_user():
 
   chat_id = data[-1]['id']
 
+  response = TEST_CLIENT.post(f'/chats/{chat_id}/join', headers={'Authorization': tmp_token})
+
   response = TEST_CLIENT.get(f'/chats/{chat_id}/users', headers={'Authorization': token})
   chat_users = json.loads(response.data.decode('utf-8'))
 
@@ -301,8 +303,8 @@ def test_admin_expulse_user():
   new_response = TEST_CLIENT.get(f'/chats/{chat_id}/users', headers={'Authorization': token})
   new_chat_users = json.loads(new_response.data.decode('utf-8'))
 
-  assert response.status_code == 403
-  assert len(chat_users) == len(new_chat_users)
+  assert response.status_code == 200
+  assert len(chat_users) > len(new_chat_users)
 
 @pytest.mark.order(18)
 def test_delete_chat():

@@ -6,7 +6,7 @@ import communs
 from endpoints.abstract_endpoints import AbstractEndpoints
 from endpoints.chat_vo import ChatVO
 
-ns = Namespace("chats", description='Chat API')
+ns = Namespace("chats", description='Endpoint para gerenciar chats no Chat API')
 
 user_model = ns.model('user', {
   "id": fields.Integer(required=True, description="User Id"),
@@ -38,9 +38,8 @@ class ChatsEndpoint(Resource, AbstractEndpoints):
   @ns.response(400, "Bad Request")
   @ns.response(404, "Not Found")
   def post(self):
-    print(request.headers)
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     id = self.get_id_from_cache(token)
@@ -73,7 +72,7 @@ class ChatEndpoint(Resource, AbstractEndpoints):
   @ns.response(404, "Not Found")
   def get(self, chat_id):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     if chat_id < 1:
@@ -105,7 +104,7 @@ class ChatEndpoint(Resource, AbstractEndpoints):
   @ns.response(404, "Not Found")
   def put(self, chat_id):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     id = self.get_id_from_cache(token)
@@ -140,7 +139,7 @@ class ChatEndpoint(Resource, AbstractEndpoints):
   @ns.response(404, "Not Found")
   def delete(self, chat_id):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     id = self.get_id_from_cache(token)
@@ -171,7 +170,7 @@ class ChatUsersEndpoint(Resource, AbstractEndpoints):
   @ns.response(404, "Not Found")
   def get(self, chat_id):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     if chat_id < 1:
@@ -188,12 +187,14 @@ class ChatUsersEndpoint(Resource, AbstractEndpoints):
         abort(404, str(e))
     
     try:
-      users = self._chat_service.find_users(chat_id)
+      users = self._chat_service.find_users(chat_id, id)
       users_json = communs._to_json(users)
     except IndexError as e:
       abort(404, str(e))
+    except Exception as e:
+      abort(403, str(e))
 
-    return users
+    return users_json
 
 @ns.route("/<int:chat_id>/join")
 class ChatJoinEndpoint(Resource, AbstractEndpoints):
@@ -205,7 +206,7 @@ class ChatJoinEndpoint(Resource, AbstractEndpoints):
   @ns.response(409, "Conflict")
   def post(self, chat_id):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     if chat_id < 1:
@@ -241,7 +242,7 @@ class ChatJoinEndpoint(Resource, AbstractEndpoints):
   @ns.response(404, "Not Found")
   def delete(self, chat_id):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     if chat_id < 1:
@@ -276,7 +277,7 @@ class ChatAdminEndpoint(Resource, AbstractEndpoints):
   @ns.response(404, "Not Found")
   def delete(self, chat_id, user_id):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     if chat_id < 1:

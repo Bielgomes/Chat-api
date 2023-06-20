@@ -10,6 +10,10 @@
 
 `POST /users/token`
 
+### Get User
+
+`GET /users`
+
 ### Upload Avatar
 
 `POST /users/avatar`
@@ -62,11 +66,11 @@
 
 ### Remove User from Chat
 
-`REMOVE /chats/<int:chat_id>/leave`
+`DELETE /chats/<int:chat_id>/leave`
 
 ### Admin Remove User from Chat
 
-`REMOVE /chats/<int:chat_id>/admin/users/<int:user_id>`
+`DELETE /chats/<int:chat_id>/admin/users/<int:user_id>`
 
 
 

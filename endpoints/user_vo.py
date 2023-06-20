@@ -38,6 +38,15 @@ class UserVO():
     vo.description = dto.description
     
     return vo
+  
+  @staticmethod
+  def from_dto_partial(dto : UserDTO):
+    vo = UserVO()
+    vo.id = dto.id
+    vo.name = dto.name
+    vo.description = dto.description
+    
+    return vo
 
   def from_json(self, json):
     self.email = self._is_email_valid(json, "email", 90),

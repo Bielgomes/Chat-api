@@ -6,7 +6,7 @@ from endpoints.abstract_endpoints import AbstractEndpoints
 
 from endpoints.message_vo import MessageVO
 
-ns = Namespace("chats", description="Chat API")
+ns = Namespace("chats", description="Endpoint para gerenciar mensagens no Chat API")
 
 message_model = ns.model("message",
 {
@@ -36,7 +36,7 @@ class MessagesEndpoint(Resource, AbstractEndpoints):
     text = request.args.get('text')
 
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     id = self.get_id_from_cache(token)
@@ -72,7 +72,7 @@ class MessagesEndpoint(Resource, AbstractEndpoints):
   @ns.response(404, "Not Found")
   def post(self, chat_id):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     id = self.get_id_from_cache(token)
@@ -110,7 +110,7 @@ class MessageEndpoint(Resource, AbstractEndpoints):
   @ns.response(404, "Not Found")
   def delete(self, chat_id, message_id):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     id = self.get_id_from_cache(token)

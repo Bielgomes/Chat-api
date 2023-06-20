@@ -5,15 +5,18 @@ class UserRepository(AbstractRepository):
   def __init__(self):
     super().__init__(UserDTO)
 
-  def add(self, user: UserDTO):
+  def add(self, user: UserDTO, password):
     self._session.add(user)
     self._session.flush()
 
-    user.token = str(hash(f"{user.id}.{user.email}"))
+    user.token = str(hash(f"{user.id}.{password}"))
 
     self._session.commit()
 
     return user.token, user.id
+  
+  def find_by_ids(self, ids):
+    return self._session.query(self._class).filter(self._class.id.in_(ids)).all()
 
   def find_by_token(self, token):
     return self._session.query(self._class).filter(self._class.token == token).first()
@@ -25,10 +28,7 @@ class UserRepository(AbstractRepository):
     return self._session.query(self._class.token).filter(self._class.id == id).first()
 
   def update_info(self, id, user : UserDTO):
-    current_user = self.find_by_token(id)
-
-    if current_user is None:
-      raise IndexError("User not found!")
+    current_user = self.find(id)
 
     current_user.name = user.name
     current_user.description = user.description
@@ -37,21 +37,17 @@ class UserRepository(AbstractRepository):
 
   def update_email(self, id, user : UserDTO):
     current_user = self.find(id)
-    if current_user is None:
-      raise IndexError("User not found!")
 
     current_user.email = user.email
-    current_user.token = str(hash(current_user.id + '.' + current_user.email))
 
     self._session.commit()
 
-  def update_password(self, id, user : UserDTO):
-    current_user = self.find_by_token(id)
-
-    if current_user is None:
-      raise IndexError("User not found!")
+  def update_password(self, id, user : UserDTO, new_password):
+    current_user = self.find(id)
     
     current_user.password = user.password
-    current_user.token = user.token
+    current_user.token = str(hash(f"{current_user.id}.{new_password}"))
 
     self._session.commit()
+
+    return current_user.token

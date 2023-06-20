@@ -18,7 +18,7 @@ api = Api(
   doc="/_docs",
   version="1.0.0",
   title="Chat api",
-  description="Test chat api"
+  description="Uma API de chat que permite gerenciar usuários, chats e mensagens."
 )
 
 api.add_namespace(user_ns)

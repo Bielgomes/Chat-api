@@ -24,12 +24,18 @@ class ChatService:
     
     return ChatVO.from_dto(chat)
   
-  def find_users(self, id):
-    users = self.__user_chat_repository.find_by_chat(id)
-    if users is None:
+  def find_users(self, id, user_id):
+    user_chats = self.__user_chat_repository.find_by_chat(id)
+    if user_chats is None:
       raise IndexError("Chat not found")
     
-    users_vo = [UserVO.from_dto(user) for user in users]
+    user_ids = [user_chat.id_user for user_chat in user_chats]
+
+    if user_id not in user_ids:
+      raise Exception("You are not in this chat")
+
+    users = self.__user_repository.find_by_ids(user_ids)
+    users_vo = [UserVO.from_dto_partial(user) for user in users]
     
     return users_vo
 

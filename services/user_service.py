@@ -74,14 +74,15 @@ class UserService:
     userDTO = user.to_dto()
     userDTO.password = bcrypt.hashpw(userDTO.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
-    return self.__user_repository.add(userDTO)
+    return self.__user_repository.add(userDTO, user.password)
 
   def update_info(self, user : UserVO, id):
     self.__user_repository.update_info(id, user.to_dto())
 
   def update_email(self, newUser : UserVO, id):
     user : UserDTO = self.__user_repository.find(id)
-    if self.__user_repository.find_by_token(newUser.email):
+
+    if self.__user_repository.find_by_email(newUser.email):
       raise Exception("This email is already registered")
 
     self.__user_repository.update_email(user.id, newUser.to_dto())
@@ -90,7 +91,7 @@ class UserService:
     userDTO = newUser.to_dto()
     userDTO.password = bcrypt.hashpw(userDTO.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
-    self.__user_repository.update_password(id, userDTO)
+    return self.__user_repository.update_password(id, userDTO, userDTO.password)
 
   def delete_user(self, user : UserVO):
     current_user : UserDTO = self.__user_repository.find_by_email(user.email)
@@ -102,7 +103,7 @@ class UserService:
 
     self.__user_chat_repository.delete_by_user(current_user.id)
     
-    #self.__user_chat_repository.delete_by_chats(chats_ids)
+    self.__user_chat_repository.delete_by_chats(chats_ids)
 
     self.__message_repository.delete_by_chats(chats_ids)
     self.__chat_repository.delete_by_owner(current_user.id)

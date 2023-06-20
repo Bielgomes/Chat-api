@@ -1,11 +1,15 @@
 import communs
 from flask import request, abort, jsonify, send_file
-from flask_restx import Resource, Namespace, fields
+from flask_restx import Resource, Namespace, fields, reqparse
+from werkzeug.datastructures import FileStorage
 
 from endpoints.abstract_endpoints import AbstractEndpoints
 from endpoints.user_vo import UserVO
 
-ns = Namespace("users", description="Chat API")
+ns = Namespace("users", description="Endpoint para gerenciar usuários no Chat API")
+
+upload_parser = reqparse.RequestParser()
+upload_parser.add_argument('file', location='files', type=FileStorage, required=True)
 
 chat_model = ns.model('chat',
 {
@@ -49,6 +53,28 @@ user_login_model = ns.model('user_login', {
 @ns.route("")
 class UsersEndpoint(Resource, AbstractEndpoints):
 
+  @ns.doc(security="token")
+  @ns.response(200, "Success", user_model)
+  @ns.response(403, "Forbidden")
+  @ns.response(404, "Not Found")
+  def get(self):
+    token = request.headers.get('Authorization')
+    if token is None or not token.lstrip('-').isdigit():
+      abort(403, "Invalid Token")
+
+    id = self.get_id_from_cache(token)
+
+    if not id:
+      try:
+        user = self._user_service.find_user(token)
+        id = user.id
+        self.add_to_cache(token, id)
+      except IndexError as e:
+        abort(404, str(e))
+
+    user = self._user_service.find_user_by_id(id)
+    return user.to_json()
+
   @ns.expect(user_register_model, validate=True)
   @ns.response(200, "Success")
   @ns.response(400, "Bad Request")
@@ -75,7 +101,7 @@ class UsersEndpoint(Resource, AbstractEndpoints):
   @ns.response(404, "Not Found")
   def patch(self):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     id = self.get_id_from_cache(token)
@@ -106,7 +132,7 @@ class UsersEndpoint(Resource, AbstractEndpoints):
   @ns.response(404, "Not Found")
   def delete(self):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     id = self.get_id_from_cache(token)
@@ -159,7 +185,7 @@ class UserChatsEndpoint(Resource, AbstractEndpoints):
   @ns.response(404, "Not Found")
   def get(self):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     id = self.get_id_from_cache(token)
@@ -213,7 +239,7 @@ class UserEmailEndpoint(Resource, AbstractEndpoints):
   @ns.response(409, "Conflict")
   def patch(self):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     id = self.get_id_from_cache(token)
@@ -250,7 +276,7 @@ class UserPasswordEndpoint(Resource, AbstractEndpoints):
   @ns.response(404, "Not Found")
   def patch(self):
     token = request.headers.get('Authorization')
-    if token is None or not len(token) >= 19:
+    if token is None or not token.lstrip('-').isdigit():
       abort(403, "Invalid Token")
 
     id = self.get_id_from_cache(token)
@@ -268,7 +294,9 @@ class UserPasswordEndpoint(Resource, AbstractEndpoints):
     try:
       user = UserVO()
       user.from_json_password(body)
-      self._user_service.update_password(user, id)
+      new_token = self._user_service.update_password(user, id)
+      self.remove_from_cache(token, id)
+      self.add_to_cache(new_token, id)
     except ValueError as e:
       abort(400, str(e))
 
@@ -277,7 +305,7 @@ class UserPasswordEndpoint(Resource, AbstractEndpoints):
 @ns.route("/<int:user_id>/avatar")
 class UserAvatarEndpoint(Resource, AbstractEndpoints):
 
-  @ns.response(200, "Success")
+  @ns.response(200, "Success", mimetype="image/jpeg", headers={"Content-Disposition": "inline; filename=avatar.jpg"})
   @ns.response(403, "Forbidden")
   @ns.response(404, "Not Found")
   def get(self, user_id):
@@ -287,7 +315,7 @@ class UserAvatarEndpoint(Resource, AbstractEndpoints):
     try:
       self._user_service.find_user_by_id(user_id)
       filename = self._user_service.find_file(str(user_id))
-      return send_file(filename, mimetype="image/jpeg")
+      return send_file(filename, mimetype="image/jpeg", download_name="avatar.jpg")
     except IndexError or FileNotFoundError as e:
       abort(404, str(e))
 
@@ -295,6 +323,7 @@ class UserAvatarEndpoint(Resource, AbstractEndpoints):
 class UserAvatarEndpoints(Resource, AbstractEndpoints):
 
   @ns.doc(security="token")
+  @ns.expect(upload_parser)
   @ns.response(200, "Success")
   @ns.response(400, "Bad Request")
   @ns.response(403, "Forbidden")

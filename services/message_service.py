@@ -63,6 +63,9 @@ class MessageService:
     if message is None:
       raise IndexError("Message not found") 
     
+    if message.id_chat != chat.id:
+      raise IndexError("This message does not belong to this chat")
+    
     if message.id_user != user.id:
       raise PermissionError("This user does not own this message")
     

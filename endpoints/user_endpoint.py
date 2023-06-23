@@ -126,6 +126,7 @@ class UsersEndpoint(Resource, AbstractEndpoints):
     return jsonify(success="User changed successfully")
 
   @ns.doc(security="token")
+  @ns.expect(user_login_model, validate=True)
   @ns.response(200, "Success")
   @ns.response(401, "Unauthorized")
   @ns.response(403, "Forbidden")
